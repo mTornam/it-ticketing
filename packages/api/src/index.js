@@ -3,12 +3,16 @@ dotenv.config()
 
 import express from 'express'
 import dbConnect from './config/db.config.js'
+import mainRouter from './routes/router.js'
 
 const app = express()
 const PORT = process.env.SERVER_PORT
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
+
+// Routes
+app.use('/api/v1', mainRouter) 
 
 await dbConnect()
 
