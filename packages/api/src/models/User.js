@@ -8,7 +8,7 @@ import bcrypt from 'bcryptjs'
 const UserSchema = new Schema({
     username: { type: String, required: true, unique: true, index: true },
     password: { type: String, required: true, select: false }, // never persisted as-is
-    passwordHash: { type: String, required: true, select: false },
+    passwordHash: { type: String, default: undefined, select: false },
     staffId: { type: String, required: true, unique: true, index: true },
     phone: { type: String, required: true },
     role: { type: String, enum: ['reporter', 'agent', 'manager', 'admin'], default: 'reporter' },
@@ -17,15 +17,14 @@ const UserSchema = new Schema({
 }, { timestamps: true })
 
 // Hashpassword
-UserSchema.pre('save', async function (next) {
+UserSchema.pre('save', async function () {
     if (!this.isModified('password')) return next()
     this.passwordHash = await bcrypt.hash(this.password, 12)
     this.password = undefined // never persist the plaintext password
-    next()
 })
 
 // Compare password
-UserSchema.methods.comparePasswords = function (candidate) {
+UserSchema.methods.comparePassword = function (candidate) {
     return bcrypt.compare(candidate, this.passwordHash)
 }
 

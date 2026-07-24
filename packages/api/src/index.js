@@ -12,7 +12,11 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
 // Routes
-app.use('/api/v1', mainRouter) 
+app.use('/test', (req, res) => {
+    res.send('Hello - Success')
+})
+app.use('/api/v1', mainRouter)
+
 
 await dbConnect()
 

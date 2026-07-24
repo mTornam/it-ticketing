@@ -12,11 +12,11 @@ export async function createUser(req, res) {
         if (existingUser) { return res.send('Username not availabe').status(400) }
         // Create new user
         const newUser = new User({ ...req.body })
-        await newUser.save()       
-         
+        await newUser.save()
+
         res.send('User created successfully').status(201)
     } catch (error) {
-        res.status(400).json({error: error.message})
+        res.status(400).json({ error: error.message })
     }
 }
 
