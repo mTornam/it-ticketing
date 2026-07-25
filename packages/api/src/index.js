@@ -19,7 +19,6 @@ app.use('/test', (req, res) => {
 })
 app.use('/api/v1', mainRouter)
 
-
 await dbConnect()
 
 app.listen(PORT, async () => {

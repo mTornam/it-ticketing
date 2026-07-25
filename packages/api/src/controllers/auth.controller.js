@@ -48,32 +48,6 @@ export async function login(req, res) {
  * @param {import('express').Request} req 
  * @param {import('express').Response} res 
  */
-export async function arefresh(req, res) {
-    const token = req.cookies[REFRESH_COOKIE_NAME]
-    if (!token) return res.status(401).json({ error: 'Invalid or expired refresh token' })
-
-    let payload
-    try {
-        payload = verifyRefreshToken(token)
-    } catch {
-        return res.status(401).json({ error: 'Session no longer valid' })
-    }
-
-    const user = await User.findById(payload.sub)
-    if (!user || !user.active || !user.tokenVersion !== payload.tokenVersion) {
-        return res.status(401).json({ error: 'Session no longer valid' })
-    }
-
-    const accessToken = signAccessToken(user)
-    const newRefreshToken = signRefreshToken(user)
-    res.cookie(REFRESH_COOKIE_NAME, { path: 'api/v1/auth' })
-    res.json({ accessToken })
-}
-
-/**
- * @param {import('express').Request} req 
- * @param {import('express').Response} res 
- */
 export async function me(req, res) {
     console.log('req.user')
     const user = await User.findById(req.user.sub).select('-passwordHash')
@@ -110,5 +84,14 @@ export async function refresh(req, res) {
     // Add refresh token to cookie
     res.cookie(REFRESH_COOKIE_NAME, newRefreshToken, cookieOpts)
 
-    return res.json({accessToken: newAccessToken})
+    return res.json({ accessToken: newAccessToken })
+}
+
+/**
+ * @param {import('express').Request} req 
+ * @param {import('express').Response} res 
+ */
+export function logout(req, res) {
+    res.clearCookie(REFRESH_COOKIE_NAME, { path: '/api/v1/auth' })
+    res.json({ success: true })
 }
