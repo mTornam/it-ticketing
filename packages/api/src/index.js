@@ -2,6 +2,7 @@ import dotenv from 'dotenv'
 dotenv.config()
 
 import express from 'express'
+import cookieParser from 'cookie-parser'
 import dbConnect from './config/db.config.js'
 import mainRouter from './routes/router.js'
 
@@ -10,6 +11,7 @@ const PORT = process.env.SERVER_PORT
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
+app.use(cookieParser())
 
 // Routes
 app.use('/test', (req, res) => {

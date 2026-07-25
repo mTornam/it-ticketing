@@ -23,10 +23,10 @@ const cookieOpts = {
 export async function login(req, res) {
     const { username, password } = req.body
     const user = await User.findOne({ username, active: true }).select('+passwordHash') // include passwordhash from Document
-    if (!user) return res.status(401).json({ error: 'Invalid Credentials' })
+    if (!user) return res.status(401).json({ message: 'Invalid Credentials' })
 
     const isValid = await user.comparePassword(password)
-    if (!isValid) return res.status(401).json({ error: 'Invalid username or password' })
+    if (!isValid) return res.status(401).json({ message: 'Invalid username or password' })
 
     const accessToken = signAccessToken(user)
     const refreshToken = signRefreshToken(user)
@@ -35,12 +35,12 @@ export async function login(req, res) {
 
     // Remove passwordHash and _id from response
     const userResponse = user.toObject()
-    delete userResponse.passwordHash 
+    delete userResponse.passwordHash
     delete userResponse._id
-    
+
     res.json({
         accessToken,
-        user: userResponse// exclude passwordHash
+        user: userResponse // exclude passwordHash
     })
 }
 
@@ -48,7 +48,7 @@ export async function login(req, res) {
  * @param {import('express').Request} req 
  * @param {import('express').Response} res 
  */
-export async function refresh(req, res) {
+export async function arefresh(req, res) {
     const token = req.cookies[REFRESH_COOKIE_NAME]
     if (!token) return res.status(401).json({ error: 'Invalid or expired refresh token' })
 
@@ -75,6 +75,40 @@ export async function refresh(req, res) {
  * @param {import('express').Response} res 
  */
 export async function me(req, res) {
+    console.log('req.user')
     const user = await User.findById(req.user.sub).select('-passwordHash')
     if (!user) return res.status(404).json({ error: 'User not found' })
+
+    return res.json(user)
+}
+
+/**
+ * @param {import('express').Request} req 
+ * @param {import('express').Response} res 
+ */
+export async function refresh(req, res) {
+    const refreshToken = req.cookies[REFRESH_COOKIE_NAME]
+    if (!refreshToken) return res.status(401).json({ message: 'No refresh token provided' })
+
+    let payload
+    try {
+        payload = verifyRefreshToken(refreshToken)
+    } catch (error) {
+        return res.status(401).json({ message: error.message })
+    }
+
+    const user = await User.findById(payload.sub)
+    if (!user || !user.active) {
+        return res.status(401).json({ message: 'Invalid or espired session' })
+    }
+
+    // Create new access token
+    const newAccessToken = signRefreshToken(user)
+    // Create new refresh token for security
+    const newRefreshToken = signRefreshToken(user)
+
+    // Add refresh token to cookie
+    res.cookie(REFRESH_COOKIE_NAME, newRefreshToken, cookieOpts)
+
+    return res.json({accessToken: newAccessToken})
 }

@@ -11,6 +11,10 @@ export function signAccessToken(user) {
     )
 }
 
+export function verifyAccessToken(token) {
+    return jwt.verify(token, process.env.JWT_ACCESS_SECRET)
+}
+
 /**
 * @param {import('../models/User.js').UserDocument} user
 */
@@ -20,10 +24,6 @@ export function signRefreshToken(user) {
         process.env.JWT_REFRESH_SECRET,
         { expiresIn: process.env.REFRESH_TOKEN_TTL }
     )
-}
-
-export function verifyAccessToken(token) {
-    return jwt.verify(token, process.env.JWT_ACCESS_SECRET)
 }
 
 export function verifyRefreshToken(token) {

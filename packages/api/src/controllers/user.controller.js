@@ -16,10 +16,6 @@ export async function createUser(req, res) {
 
         res.send('User created successfully').status(201)
     } catch (error) {
-        res.status(400).json({ error: error.message })
+        res.status(400).json({ message: 'Invalid or expired token' })
     }
 }
-
-// export async function getUser(req, res) {
-//     res
-// }

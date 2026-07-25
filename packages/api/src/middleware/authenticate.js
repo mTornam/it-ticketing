@@ -5,16 +5,14 @@ import { verifyAccessToken } from '../services/token.service.js'
  * @param {import('express').Response} res 
  */
 export default function authenticate(req, res, next) {
-    const header = req.headers.authorization
-    if (!header?.startsWith('Bearer ')) {
-        return res.status(401).json({error: 'Missing access token'})
-    }
+    const token = req.headers['authorization'].split(" ")[1]
+    if (!token) { return res.status(401).json({ message: 'No token provided' }) }
 
-    const token = header.slice(7)
-    try{
+    try {
+        // verify token
         req.user = verifyAccessToken(token)
         next()
-    } catch {
-        return res.status(401).json({error: 'Invalid or expired access token', code: 'TOKEN_EXPIRED'})
+    } catch (error) {
+        return res.status(401).json({message: 'Invalid or expired token'})
     }
 }
