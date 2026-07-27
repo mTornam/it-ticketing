@@ -49,7 +49,6 @@ export async function login(req, res) {
  * @param {import('express').Response} res 
  */
 export async function me(req, res) {
-    console.log('req.user')
     const user = await User.findById(req.user.sub).select('-passwordHash')
     if (!user) return res.status(404).json({ error: 'User not found' })
 
